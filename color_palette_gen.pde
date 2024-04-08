@@ -1,10 +1,10 @@
 import drop.*;
 
 /*
-  Context: An appplet to generate color palettes based on an image
- Loc: Berlin, Germany
- Author: Saurabh Datta (Prophet GMBH)
- Date: May 2024
+  @Context An appplet to generate color palettes based on an image
+  @Location Berlin, Germany
+  @author Saurabh Datta (Prophet GMBH)
+  @Date May 2024
  */
 
 SDrop drop;
@@ -48,6 +48,8 @@ void draw () {
 
   if (m != null) {
     resizeAndDrawImg(m);
+
+    // draw the clear action button
   } else {
     // Prompt Space for user to "drop a file"
     displayImgLoadPromnpt();
@@ -58,9 +60,9 @@ void draw () {
   stroke(255);
   line(0, adjustedAppletHeight, width, adjustedAppletHeight);
 
-
-  //fill(255);
-  //text(str(mouseX)+", "+str(mouseY), mouseX+10, mouseY-10);
+  //  [DEBUG]
+  //  fill(255);
+  //  text(str(mouseX)+", "+str(mouseY), mouseX+10, mouseY-10);
 }
 
 void mousePressed() {
@@ -110,21 +112,19 @@ void displayImgLoadPromnpt() {
   }
   text("browse", width/2, height/2 - footerHeight/2+(textSizePxL/2*3));
   strokeWeight(1);
-  line(292, 240, 346, 240);
+  line(290, 240, 350, 240);
 
   noFill();
 }
 
 
-
 // Callback for detecting drop event of image file
-void dropEvent(DropEvent theDropEvent) {
-  // if the dropped object is an image, then load the image.
+public void dropEvent(DropEvent theDropEvent) {
+  // Check if the dropped object is an image and if so, load it
   if (theDropEvent.isImage()) {
-    println("\n\nisImage():\t" + theDropEvent.isImage());
-    println("> loading image ...");
     m = theDropEvent.loadImage();
     getImgData = true;
+    println("Loading image ...");
   } else {
     // show user that it wasn't an image
     promptText = "Not image! Try again!";
@@ -132,18 +132,42 @@ void dropEvent(DropEvent theDropEvent) {
   }
 }
 
-// Callback for window based image file selection
-void fileSelected(File selection) {
-  if (selection == null) {
-    println("Window was closed or the user hit cancel.");
-  } else {
-    println("User selected " + selection.getAbsolutePath());
+
+// Callback for window based image file selection (image file)
+public void fileSelected(File selection) {
+  // Check if a file was selected, then check if it is an image and if so, load it
+  if (selection != null){
+    if(selectionIsImage(selection)){
+      m = loadImage(selection.getAbsolutePath());
+      getImgData = true;
+      println("Loading image ...");
+    }else{
+      // show user that it wasn't an image
+      promptText = "Not image! Try again!";
+      println(promptText);
+    }
+  }else{
+    println("Image selection was cancelled! Try again?");
   }
 }
 
 
+// Custom fucntion to check file type 
+public boolean selectionIsImage(File file) {
+  String[] imgExtensions = {"jpg", "jpeg", "png", "gif", "bmp"};
+  String fileName = file.getName();
+  String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+  for (String ext : imgExtensions) {
+    if (extension.equals(ext)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
 // Display function of image and upon when the image has been dropped
-void resizeAndDrawImg(PImage img) {
+public void resizeAndDrawImg(PImage img) {
   if (getImgData) {
     // ** We are using a counter, to pass few cycles, as the image doesn't get loaded immediately
     loadingCounter++;
