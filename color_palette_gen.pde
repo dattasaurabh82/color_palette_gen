@@ -129,20 +129,6 @@ void checkOverText() {
 }
 
 
-// Display Prompt for user to clear the image
-void displayClearImageText(){
-  if (overClearText) {
-    fill(highlightColor);
-  } else {
-    fill(150);
-  }
-  textAlign(RIGHT);
-  textSize(14);
-  text("CLEAR", width/2+(m.width/2-10), padding*2);
-}
-
-
-
 PImage clearImg(PImage img) {
   if (img == null) {
     println("There was no image to be cleared ...");
@@ -185,6 +171,19 @@ void displayImgLoadPrompt() {
   text("or Press \"L\"", width/2, height/2 - footerHeight/2+(textSizePxL*3));
 
   noFill();
+}
+
+
+// Display Prompt for user to clear the image
+void displayClearImageText(){
+  if (overClearText) {
+    fill(highlightColor);
+  } else {
+    fill(150);
+  }
+  textAlign(RIGHT);
+  textSize(14);
+  text("CLEAR", width/2+(m.width/2-10), padding*2);
 }
 
 
