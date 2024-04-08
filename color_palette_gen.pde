@@ -123,6 +123,8 @@ void checkOverText() {
     }else{
       overClearText = false;
     }
+  }else{
+    overClearText = false;
   }
 }
 
