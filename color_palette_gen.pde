@@ -9,6 +9,7 @@ import drop.*;
 
 SDrop drop;
 
+PImage loadImageIcon;
 PImage m;
 boolean getImgData = false;
 int loadingCounter = 0;
@@ -26,11 +27,16 @@ int textSizePxM = 18;
 boolean overBrowseLink = false;
 String promptText = "Drop an image here";
 
+color highlightColor = unhex("FF00FFB5");  // Add 'FF' at the beginning for the alpha channel
+
 
 void setup() {
   // Applet setup
   size(640, 480);
   background(0);
+
+  loadImageIcon = loadImage("img_icon_mint.png");
+  loadImageIcon.resize(0, 75);
 
   // Calculations for image positioning in the applet (after it has loaded)
   adjustedAppletWidth = width - padding * 2;
@@ -52,7 +58,7 @@ void draw () {
     // draw the clear action button
   } else {
     // Prompt Space for user to "drop a file"
-    displayImgLoadPromnpt();
+    displayImgLoadPrompt();
   }
 
   // Lower "control area" divider (footer section) of the applet
@@ -63,6 +69,12 @@ void draw () {
   //  [DEBUG]
   //  fill(255);
   //  text(str(mouseX)+", "+str(mouseY), mouseX+10, mouseY-10);
+}
+
+void keyPressed(){
+  if(key == 'l' || key == 'L'){
+    selectInput("Select an image", "fileSelected");
+  }
 }
 
 void mousePressed() {
@@ -89,23 +101,22 @@ void checkOverText() {
 
 
 // Display Prompt for user to drop image
-void displayImgLoadPromnpt() {
+void displayImgLoadPrompt() {
   noStroke();
   fill(30);
   rectMode(CENTER);
   rect(width/2, height/2 - footerHeight/2-10, width/2+50, width/2);
+  imageMode(CENTER);
+  image(loadImageIcon, width/2, height/2-125);
   fill(255);
   textSize(textSizePxL);
-  //textMode(SHAPE);
   textAlign(CENTER);
   text(promptText, width/2, height/2 - footerHeight/2-textSizePxL/2);
   textSize(textSizePxM);
   text("or", width/2, height/2 - footerHeight/2+textSizePxL/2);
-
-
   if (overBrowseLink) {
-    fill(#00ABD3);
-    stroke(#00ABD3);
+    fill(highlightColor);
+    stroke(highlightColor);
   } else {
     fill(255);
     stroke(255);
@@ -113,6 +124,8 @@ void displayImgLoadPromnpt() {
   text("browse", width/2, height/2 - footerHeight/2+(textSizePxL/2*3));
   strokeWeight(1);
   line(290, 240, 350, 240);
+  fill(255);
+  text("or Press \"L\"", width/2, height/2 - footerHeight/2+(textSizePxL*3));
 
   noFill();
 }
@@ -196,5 +209,6 @@ public void resizeAndDrawImg(PImage img) {
     }
   }
   // Draw the image
+  imageMode(CORNER);
   image(img, (width - m.width) / 2, adjustedAppletHeight/2-img.height/2);
 }
