@@ -1,5 +1,3 @@
-import drop.*;
-
 /*
   @Context An appplet to generate color palettes based on an image
   @Location Berlin, Germany
@@ -7,6 +5,10 @@ import drop.*;
   @Date May 2024
  */
 
+
+
+/* ---- UI related ----- */
+import drop.*;
 SDrop drop;
 
 PImage loadImageIcon;
@@ -25,9 +27,19 @@ int textSizePxL = 24;
 int textSizePxM = 18;
 
 boolean overBrowseLink = false;
+boolean overClearText = false;
 String promptText = "Drop an image here";
 
 color highlightColor = unhex("FF00FFB5");  // Add 'FF' at the beginning for the alpha channel
+/* ----------------------- */
+
+
+/* -- color extraction related -- */
+import jto.colorscheme.*;
+
+ColorScheme cs;
+
+/* ------------------------------ */
 
 
 void setup() {
@@ -49,37 +61,44 @@ void setup() {
   smooth();
 }
 
+
 void draw () {
   background(0);
 
   if (m != null) {
-    resizeAndDrawImg(m);
-
-    // draw the clear action button
+    resizeAndDisplayImg(m);
+    displayClearImageText();
   } else {
     // Prompt Space for user to "drop a file"
     displayImgLoadPrompt();
   }
 
-  // Lower "control area" divider (footer section) of the applet
+  // Visual divider for Lower "control area" (footer section) of the applet
   strokeWeight(0.5);
   stroke(255);
   line(0, adjustedAppletHeight, width, adjustedAppletHeight);
-
-  //  [DEBUG]
-  //  fill(255);
-  //  text(str(mouseX)+", "+str(mouseY), mouseX+10, mouseY-10);
 }
+
 
 void keyPressed(){
   if(key == 'l' || key == 'L'){
     selectInput("Select an image", "fileSelected");
   }
+
+  if(key == 'c' || key == 'C'){
+    println("\nclearing up image ...");
+    m = clearImg(m);
+  }
 }
+
 
 void mousePressed() {
   if (overBrowseLink) {
     selectInput("Select an image", "fileSelected");
+  }
+  if(overClearText){
+    println("\nclearing up image ...");
+    m = clearImg(m);
   }
 }
 
@@ -97,7 +116,43 @@ void checkOverText() {
   } else {
     overBrowseLink = false;
   }
+
+  if (m != null){
+    if(mouseX >= width/2+(m.width/2-60) && mouseX <= width/2+m.width/2 && mouseY >= padding+10 && mouseY <= padding*3){
+      overClearText = true;
+    }else{
+      overClearText = false;
+    }
+  }
 }
+
+
+// Display Prompt for user to clear the image
+void displayClearImageText(){
+  if (overClearText) {
+    fill(highlightColor);
+  } else {
+    fill(150);
+  }
+  textAlign(RIGHT);
+  textSize(14);
+  text("CLEAR", width/2+(m.width/2-10), padding*2);
+}
+
+
+
+PImage clearImg(PImage img) {
+  if (img == null) {
+    println("There was no image to be cleared ...");
+    return null;
+  } else {
+    img = null;
+    System.gc(); // garbage collection
+    println("Image cleared up!");
+    return img;
+  }
+}
+
 
 
 // Display Prompt for user to drop image
@@ -131,16 +186,17 @@ void displayImgLoadPrompt() {
 }
 
 
+
 // Callback for detecting drop event of image file
 public void dropEvent(DropEvent theDropEvent) {
   // Check if the dropped object is an image and if so, load it
   if (theDropEvent.isImage()) {
     m = theDropEvent.loadImage();
     getImgData = true;
-    println("Loading image ...");
+    println("\nLoading image ...");
   } else {
     // show user that it wasn't an image
-    promptText = "Not image! Try again!";
+    promptText = "\nNot image! Try again!";
     println(promptText);
   }
 }
@@ -153,10 +209,10 @@ public void fileSelected(File selection) {
     if(selectionIsImage(selection)){
       m = loadImage(selection.getAbsolutePath());
       getImgData = true;
-      println("Loading image ...");
+      println("\nLoading image ...");
     }else{
       // show user that it wasn't an image
-      promptText = "Not image! Try again!";
+      promptText = "\nNot image! Try again!";
       println(promptText);
     }
   }else{
@@ -165,7 +221,7 @@ public void fileSelected(File selection) {
 }
 
 
-// Custom fucntion to check file type 
+// Custom function to check file type 
 public boolean selectionIsImage(File file) {
   String[] imgExtensions = {"jpg", "jpeg", "png", "gif", "bmp"};
   String fileName = file.getName();
@@ -180,7 +236,7 @@ public boolean selectionIsImage(File file) {
 
 
 // Display function of image and upon when the image has been dropped
-public void resizeAndDrawImg(PImage img) {
+public void resizeAndDisplayImg(PImage img) {
   if (getImgData) {
     // ** We are using a counter, to pass few cycles, as the image doesn't get loaded immediately
     loadingCounter++;
@@ -208,6 +264,7 @@ public void resizeAndDrawImg(PImage img) {
       getImgData = false;
     }
   }
+
   // Draw the image
   imageMode(CORNER);
   image(img, (width - m.width) / 2, adjustedAppletHeight/2-img.height/2);
