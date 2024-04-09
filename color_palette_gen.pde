@@ -29,8 +29,14 @@ int bottomLineY = 0;
 int textSizePxL = 24;
 int textSizePxM = 18;
 
+String browseStr = "browse";
+float browserStrX, browserStrY, browserStrWidth;
 boolean overBrowseLink = false;
+
+String clrStr = "CLEAR";
+float clrStrX, clrStrY, clrStrWidth;
 boolean overClearText = false;
+
 String promptText = "Drop an image here";
 
 color highlightColor = unhex("FF00FFB5");  // Add 'FF' at the beginning for the alpha channel
@@ -130,14 +136,16 @@ void resetParameters(){
 }
 
 void checkOverText() {
-  if (mouseX >= 292 && mouseX <= 348 && mouseY >= 230 && mouseY <= 248) {
+  // line(width/2-browserStrWidth/2, browserStrY+2, width/2+browserStrWidth/2, browserStrY+2);
+  if (mouseX >= width/2-browserStrWidth/2 && mouseX <= width/2+browserStrWidth/2 && mouseY >= browserStrY-10 && mouseY <= browserStrY+2) {
     overBrowseLink = true;
   } else {
     overBrowseLink = false;
   }
 
   if (m != null){
-    if(mouseX >= width-60 && mouseX <= width-5 && mouseY >= adjustedAppletHeight-20 && mouseY <= adjustedAppletHeight){
+    //  text(clrString, width-(clrStringWidth+10), adjustedAppletHeight-5);
+    if(mouseX >= clrStrX && mouseX <= clrStrX+clrStrWidth && mouseY >= clrStrY-20 && mouseY <= clrStrY){
       overClearText = true;
     }else{
       overClearText = false;
@@ -183,9 +191,13 @@ void displayImgLoadPrompt() {
     fill(255);
     stroke(255);
   }
-  text("browse", width/2, height/2 - footerHeight/2+(textSizePxL/2*3));
+  browserStrWidth = textWidth(browseStr);
+  browserStrX = width/2;
+  browserStrY = height/2 - footerHeight/2+(textSizePxL/2*3);
+  text(browseStr, browserStrX, browserStrY);
   strokeWeight(1);
-  line(290, 240, 350, 240);
+  line(width/2-browserStrWidth/2, browserStrY+2, width/2+browserStrWidth/2, browserStrY+2);
+
   fill(255);
   text("or Press \"L\"", width/2, height/2 - footerHeight/2+(textSizePxL*3));
 
@@ -200,9 +212,13 @@ void displayClearImageText(){
   } else {
     fill(150);
   }
-  textAlign(RIGHT);
+  textAlign(LEFT);
   textSize(14);
-  text("CLEAR", width-18, adjustedAppletHeight-5);
+  
+  clrStrWidth = textWidth(clrStr);
+  clrStrX = width-(clrStrWidth+12);
+  clrStrY = adjustedAppletHeight-5;
+  text(clrStr, clrStrX, clrStrY); 
 }
 
 
@@ -263,6 +279,7 @@ public boolean selectionIsImage(File file) {
 }
 
 
+
 // Display function of image and upon when the image has been dropped
 public void resizeAndDisplayImg(PImage img) {
   if (getImgData) {
@@ -292,7 +309,6 @@ public void resizeAndDisplayImg(PImage img) {
       getImgData = false;
     }
   }
-
   // Draw the image
   imageMode(CORNER);
   image(img, (width - m.width) / 2, adjustedAppletHeight/2-img.height/2);
@@ -355,35 +371,3 @@ void displayColorPalette(color[] colors){
     }
   }
 }
-
-
-
-
-
-
-
-
-// ------------------------------------------------------------------------------------
-// void checkOS(){
-//   if (platform == PConstants.WINDOWS) {
-//     println("OS: Windows");
-//     isWin = true;
-//     isMac = false;
-//     isNix = false;
-//   } else if (platform == PConstants.MACOSX) {
-//     println("OS: Mac OS");
-//     isWin = false;
-//     isMac = true;
-//     isNix = false;
-//   } else if (platform == PConstants.LINUX) {
-//     println("OS: Some Linux ...");
-//     isWin = false;
-//     isMac = false;
-//     isNix = true;
-//   }else{
-//     println("OS: Unknown ...");
-//     isWin = false;
-//     isMac = false;
-//     isNix = false;
-//   }
-// }
