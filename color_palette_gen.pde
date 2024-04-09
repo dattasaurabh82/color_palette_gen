@@ -6,8 +6,11 @@
  */
 
 
+String FilePath = "";
 
 /* ---- UI related ----- */
+boolean isMac, isWin, isNix;
+
 import drop.*;
 SDrop drop;
 
@@ -47,6 +50,8 @@ void setup() {
   size(640, 480);
   background(0);
 
+  // checkOS();
+
   loadImageIcon = loadImage("img_icon_mint.png");
   loadImageIcon.resize(0, 75);
 
@@ -68,6 +73,7 @@ void draw () {
   if (m != null) {
     resizeAndDisplayImg(m);
     displayClearImageText();
+    // [TBD] Show color palette 
   } else {
     // Prompt Space for user to "drop a file"
     displayImgLoadPrompt();
@@ -88,6 +94,13 @@ void keyPressed(){
   if(key == 'c' || key == 'C'){
     println("\nclearing up image ...");
     m = clearImg(m);
+    FilePath = ""; // reset the file Path global var
+  }
+
+  if(key == 'p' || key == 'P'){
+    println("Preparing color palette ...");
+    // [TBD]
+    generatePalette(FilePath);
   }
 }
 
@@ -194,6 +207,11 @@ public void dropEvent(DropEvent theDropEvent) {
   if (theDropEvent.isImage()) {
     m = theDropEvent.loadImage();
     getImgData = true;
+
+    // Once ensured that this file is an image,
+    // assign it to the global var "FilePath" for the palette generator
+    // println(theDropEvent.file()); // [TBD/WIP] returns a path
+
     println("\nLoading image ...");
   } else {
     // show user that it wasn't an image
@@ -210,6 +228,11 @@ public void fileSelected(File selection) {
     if(selectionIsImage(selection)){
       m = loadImage(selection.getAbsolutePath());
       getImgData = true;
+
+      // Once ensured that this file is an image,
+      // assign it to the global var "FilePath" for the palette generator
+      FilePath = selection.getAbsolutePath();
+
       println("\nLoading image ...");
     }else{
       // show user that it wasn't an image
@@ -220,6 +243,7 @@ public void fileSelected(File selection) {
     println("Image selection was cancelled! Try again?");
   }
 }
+
 
 
 // Custom function to check file type 
@@ -270,3 +294,63 @@ public void resizeAndDisplayImg(PImage img) {
   imageMode(CORNER);
   image(img, (width - m.width) / 2, adjustedAppletHeight/2-img.height/2);
 }
+
+
+void generatePalette(String filePath){
+  // check if the file exists
+  File f = new File(filePath);
+  if (f.exists()) {
+    println("The file exists.");
+    println(filePath);
+
+    // create our color scheme object
+    cs = new ColorScheme(filePath, this);
+
+    // get the list of colors from the color scheme
+    color[] colors = cs.toArray();
+
+    // print the colours [Debug]
+    // int middleIndex = colors.length / 2;
+    // println(colors.length, middleIndex);
+    for (int i = 0; i < colors.length; i++) {
+      println(hex(colors[i]));
+    }
+  } else {
+    println("The image file does not exist.");
+    println("Can't proceed for palette Generation ...");
+  }
+
+  // if(isMac || isNix){
+  //   // diff space handling method ...
+  // }else if (isWin){ 
+  //   // diff space parsing method ...
+  // }else{
+  //   println("Further processes not possible");
+  //   exit();
+  // }
+}
+
+
+// void checkOS(){
+//   if (platform == PConstants.WINDOWS) {
+//     println("OS: Windows");
+//     isWin = true;
+//     isMac = false;
+//     isNix = false;
+//   } else if (platform == PConstants.MACOSX) {
+//     println("OS: Mac OS");
+//     isWin = false;
+//     isMac = true;
+//     isNix = false;
+//   } else if (platform == PConstants.LINUX) {
+//     println("OS: Some Linux ...");
+//     isWin = false;
+//     isMac = false;
+//     isNix = true;
+//   }else{
+//     println("OS: Unknown ...");
+//     isWin = false;
+//     isMac = false;
+//     isNix = false;
+//   }
+// }
