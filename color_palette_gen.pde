@@ -135,9 +135,9 @@ void keyPressed() {
   if(key == 'd' || key == 'D'){
     debugView = !debugView;
     if(debugView){
-      myConsole.show();
+        myConsole.show();
     }else{
-      myConsole.hide();
+        myConsole.hide();
     }
   }
   if(key == '0'){
@@ -325,7 +325,6 @@ public void resizeAndDisplayImg(PImage img) {
         loadingCounter++;
         if (loadingCounter == 20) {
             println("orig img w:", img.width, " orig img h:", img.height);
-
             // Business logic for resizing image
             if (img.width > adjustedAppletWidth || img.height > adjustedAppletHeight) {
                 // Check if the image is larger than the adjusted dimensions
@@ -342,7 +341,6 @@ public void resizeAndDisplayImg(PImage img) {
             } else {
                 println("No resizing needed ...");
             }
-
             loadingCounter = 0;
             getImgData = false;
         }
