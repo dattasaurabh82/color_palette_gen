@@ -93,17 +93,10 @@ void keyPressed(){
   }
 
   if(key == 'c' || key == 'C'){
-    println("\nclearing up image ...");
-
-    m = clearImg(m);          // make the image object null
-    FilePath = "";            // reset the file Path global var
-    cs = null;                // reset the color scheme object to null
-    colors = new color[0];    // re-initialize color palette array to all zeros
-    colArrIsNonZero = false;  // 
+    resetParameters();
   }
 
   if(key == 'p' || key == 'P'){
-    println("Preparing color palette ...");
     generatePalette(FilePath);
   }
 }
@@ -114,13 +107,7 @@ void mousePressed() {
     selectInput("Select an image", "fileSelected");
   }
   if(overClearText){
-    println("\nclearing up image ...");
-
-    m = clearImg(m);          // make the image object null
-    FilePath = "";            // reset the file Path global var
-    cs = null;                // reset the color scheme object to null
-    colors = new color[0];    // re-initialize color palette array to all zeros
-    colArrIsNonZero = false;  // 
+    resetParameters();
   }
 }
 
@@ -132,6 +119,16 @@ void mouseDragged() {
   checkOverText();
 }
 
+
+void resetParameters(){
+    println("\nclearing up image & reseting things ...");
+    m = clearImg(m);          // make the image object null
+    FilePath = "";            // reset the file Path global var
+    cs = null;                // reset the color scheme object to null
+    colors = new color[0];    // re-initialize color palette array to all zeros
+    colArrIsNonZero = false;  // 
+}
+
 void checkOverText() {
   if (mouseX >= 292 && mouseX <= 348 && mouseY >= 230 && mouseY <= 248) {
     overBrowseLink = true;
@@ -140,7 +137,7 @@ void checkOverText() {
   }
 
   if (m != null){
-    if(mouseX >= width/2+(m.width/2-60) && mouseX <= width/2+m.width/2 && mouseY >= padding+10 && mouseY <= padding*3){
+    if(mouseX >= width-60 && mouseX <= width-5 && mouseY >= adjustedAppletHeight-20 && mouseY <= adjustedAppletHeight){
       overClearText = true;
     }else{
       overClearText = false;
@@ -205,7 +202,7 @@ void displayClearImageText(){
   }
   textAlign(RIGHT);
   textSize(14);
-  text("CLEAR", width/2+(m.width/2-10), padding*2);
+  text("CLEAR", width-18, adjustedAppletHeight-5);
 }
 
 
@@ -215,12 +212,11 @@ public void dropEvent(DropEvent theDropEvent) {
   // Check if the dropped object is an image and if so, load it
   if (theDropEvent.isImage()) {
     m = theDropEvent.loadImage();
-    getImgData = true;
-
     // Once ensured that this file is an image,
     // assign it to the global var "FilePath" for the palette generator
-    // println(theDropEvent.file()); // [TBD/WIP] returns a path
-
+    FilePath = theDropEvent.file().getAbsolutePath();
+    // println(FilePath);
+    getImgData = true;   // this var is used to ensure that image has been loaded now grab info to do resizing if needed
     println("\nLoading image ...");
   } else {
     // show user that it wasn't an image
@@ -232,16 +228,14 @@ public void dropEvent(DropEvent theDropEvent) {
 
 // Callback for window based image file selection (image file)
 public void fileSelected(File selection) {
-  // Check if a file was selected, then check if it is an image and if so, load it
   if (selection != null){
+    // check it is an image or not
     if(selectionIsImage(selection)){
-      m = loadImage(selection.getAbsolutePath());
-      getImgData = true;
-
       // Once ensured that this file is an image,
+      m = loadImage(selection.getAbsolutePath());
       // assign it to the global var "FilePath" for the palette generator
       FilePath = selection.getAbsolutePath();
-
+      getImgData = true;   // this var is used to ensure that image has been loaded now grab info to do resizing if needed
       println("\nLoading image ...");
     }else{
       // show user that it wasn't an image
@@ -313,11 +307,22 @@ void generatePalette(String filePath){
   if (f.exists()) {
     println("The file exists.");
     println(filePath);
-
-    // create our color scheme object
-    cs = new ColorScheme(filePath, this);
-    // get the list of colors from the color scheme
-    colors = cs.toArray();
+    println("Preparing color palette ...");
+    try {
+      // create our color scheme object
+      cs = new ColorScheme(filePath, this);
+      // get the list of colors from the color scheme
+      colors = cs.toArray();
+    } catch (OutOfMemoryError e) {
+      // Handle the OutOfMemoryError
+      println("Ran out of memory!\nImage too big and the respectivce color array is LAAARRGEEE ...");
+      resetParameters();
+      // You can add more error handling code here
+    } catch (Exception e) {
+      // Handle other exceptions
+      e.printStackTrace();
+      resetParameters();
+    }
   } else {
     println("The image file does not exist.");
     println("Can't proceed for palette Generation ...");
@@ -327,7 +332,7 @@ void generatePalette(String filePath){
 
 
 void displayColorPalette(color[] colors){
-  // Check if the color is not black
+  // check if the color is not black
   for (color c : colors) {
     if (c != color(0, 0, 0)) { 
       colArrIsNonZero = true;

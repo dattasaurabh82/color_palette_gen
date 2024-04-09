@@ -34,7 +34,7 @@ void setup() {
   //draw grid on the bottom of the image
   int middleIndex = colors.length / 2;
   
-  //println(colors.length, middleIndex);
+  println(colors.length, middleIndex);
   
   int widthOfBox = image.width / colors.length * 2;
   for (int i = 0; i < middleIndex; i++) {
