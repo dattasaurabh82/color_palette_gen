@@ -67,13 +67,13 @@ void setup() {
     cp5.enableShortcuts();
 
     myConsole = cp5.addTextarea("txt")
-        .setPosition(5, 5)
-        .setSize(250, 250)
+        .setPosition(5, 0)
+        .setSize(300, 250)
         .setFont(createFont("", 9))
         .setLineHeight(12)
-        .setColor(color(200))
-        .setColorBackground(color(0, 100))
-        .setColorForeground(color(255, 100));
+        .setColor(color(255))
+        .setColorBackground(color(0, 150))
+        .setColorForeground(color(255));
     ;
     if(debugView){
       myConsole.show();
@@ -367,6 +367,8 @@ void generatePalette(String filePath) {
             cs = new ColorScheme(filePath, this);
             // get the list of colors from the color scheme
             colors = cs.toArray();
+            println("Color palette (and scheme) prepared!");
+            println("\nYou can now cycle through schemes");
         } 
         catch (OutOfMemoryError e) {
             // Handle the OutOfMemoryError
