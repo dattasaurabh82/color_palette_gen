@@ -16,9 +16,9 @@ SDrop drop;
 
 PImage loadImageIcon;
 PImage m;
+
 boolean getImgData = false;
 int loadingCounter = 0;
-
 
 int footerHeight = 80;
 int padding = 20;
@@ -39,9 +39,10 @@ color highlightColor = unhex("FF00FFB5");  // Add 'FF' at the beginning for the 
 
 /* -- color extraction related -- */
 import jto.colorscheme.*;
-
 ColorScheme cs;
 
+color[] colors;
+boolean colArrIsNonZero = false;
 /* ------------------------------ */
 
 
@@ -50,7 +51,8 @@ void setup() {
   size(640, 480);
   background(0);
 
-  // checkOS();
+  // Inititlaize color palette array to zeros
+  colors = new color[0];
 
   loadImageIcon = loadImage("img_icon_mint.png");
   loadImageIcon.resize(0, 75);
@@ -71,12 +73,11 @@ void draw () {
   background(0);
 
   if (m != null) {
-    resizeAndDisplayImg(m);
-    displayClearImageText();
-    // [TBD] Show color palette 
+    resizeAndDisplayImg(m);       // resizes and center places the loaded image 
+    displayClearImageText();      // user prompt as "clear" the image
+    displayColorPalette(colors);  // shows teh generated color scheme/palettes at the bottom
   } else {
-    // Prompt Space for user to "drop a file"
-    displayImgLoadPrompt();
+    displayImgLoadPrompt();       // shows prompt for user to "drop a file"
   }
 
   // Visual divider for Lower "control area" (footer section) of the applet
@@ -93,13 +94,16 @@ void keyPressed(){
 
   if(key == 'c' || key == 'C'){
     println("\nclearing up image ...");
-    m = clearImg(m);
-    FilePath = ""; // reset the file Path global var
+
+    m = clearImg(m);          // make the image object null
+    FilePath = "";            // reset the file Path global var
+    cs = null;                // reset the color scheme object to null
+    colors = new color[0];    // re-initialize color palette array to all zeros
+    colArrIsNonZero = false;  // 
   }
 
   if(key == 'p' || key == 'P'){
     println("Preparing color palette ...");
-    // [TBD]
     generatePalette(FilePath);
   }
 }
@@ -111,7 +115,12 @@ void mousePressed() {
   }
   if(overClearText){
     println("\nclearing up image ...");
-    m = clearImg(m);
+
+    m = clearImg(m);          // make the image object null
+    FilePath = "";            // reset the file Path global var
+    cs = null;                // reset the color scheme object to null
+    colors = new color[0];    // re-initialize color palette array to all zeros
+    colArrIsNonZero = false;  // 
   }
 }
 
@@ -296,6 +305,8 @@ public void resizeAndDisplayImg(PImage img) {
 }
 
 
+
+
 void generatePalette(String filePath){
   // check if the file exists
   File f = new File(filePath);
@@ -305,32 +316,49 @@ void generatePalette(String filePath){
 
     // create our color scheme object
     cs = new ColorScheme(filePath, this);
-
     // get the list of colors from the color scheme
-    color[] colors = cs.toArray();
-
-    // print the colours [Debug]
-    // int middleIndex = colors.length / 2;
-    // println(colors.length, middleIndex);
-    for (int i = 0; i < colors.length; i++) {
-      println(hex(colors[i]));
-    }
+    colors = cs.toArray();
   } else {
     println("The image file does not exist.");
     println("Can't proceed for palette Generation ...");
   }
-
-  // if(isMac || isNix){
-  //   // diff space handling method ...
-  // }else if (isWin){ 
-  //   // diff space parsing method ...
-  // }else{
-  //   println("Further processes not possible");
-  //   exit();
-  // }
 }
 
 
+
+void displayColorPalette(color[] colors){
+  // Check if the color is not black
+  for (color c : colors) {
+    if (c != color(0, 0, 0)) { 
+      colArrIsNonZero = true;
+      break;
+    }
+  }
+
+  // if color scheme object is not null and if all the col elements in the the color array are non-zeros  
+  if (cs != null && colArrIsNonZero) {
+    for (int i = 0; i < colors.length; i++) {
+      // println(hex(colors[i]));
+      rectMode(CORNER);
+      int widthOfCell = width/colors.length;
+      int x = i*widthOfCell;
+
+      strokeWeight(0.5);
+      stroke(highlightColor);
+      fill(colors[i]);
+      rect(x, adjustedAppletHeight, x + widthOfCell, 64);
+    }
+  }
+}
+
+
+
+
+
+
+
+
+// ------------------------------------------------------------------------------------
 // void checkOS(){
 //   if (platform == PConstants.WINDOWS) {
 //     println("OS: Windows");
