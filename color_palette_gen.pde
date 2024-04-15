@@ -7,9 +7,22 @@
 
 
 String FilePath = "";
+boolean imgIsFile, imgIsURL;
 
 /* ---- UI related ----- */
-// boolean isMac, isWin, isNix;
+import java.awt.Toolkit;
+import java.awt.datatransfer.*;
+import java.net.*;
+import java.util.regex.*;
+
+boolean isMac, isWin, isNix;
+
+String clipboardText = "";
+String imgURL = "";
+String pastePromptTxt = "";
+boolean loadImgFromUrl = false;
+
+
 import controlP5.*;
 ControlP5 cp5;
 Textarea myConsole;
@@ -55,6 +68,13 @@ ColorScheme cs;
 
 color[] colors;
 boolean colArrIsNonZero = false;
+
+int heightOfPaletteCell = 64;
+
+
+import processing.data.JSONObject;
+import processing.data.*;
+JSONArray palette;
 /* ------------------------------ */
 
 
@@ -62,6 +82,13 @@ void setup() {
     // Applet setup
     size(640, 480);
     background(0);
+
+    detectOs();
+    if (isMac || isNix) {
+        pastePromptTxt = "or\npaste an image URL (cmd+v)";
+    } else if (isWin) {
+        pastePromptTxt = "or\npaste an image URL (ctrl+v)";
+    }
 
     cp5 = new ControlP5(this);
     cp5.enableShortcuts();
@@ -75,10 +102,10 @@ void setup() {
         .setColorBackground(color(0, 150))
         .setColorForeground(color(255));
     ;
-    if(debugView){
-      myConsole.show();
-    }else{
-      myConsole.hide();
+    if (debugView) {
+        myConsole.show();
+    } else {
+        myConsole.hide();
     }
     console = cp5.addConsole(myConsole);
 
@@ -103,46 +130,98 @@ void setup() {
 void draw () {
     background(0);
 
-    if (m != null) {
+    // image laoding method for Drop event and File selection
+    if (m != null && m.width > 0) {
         resizeAndDisplayImg(m);       // resizes and center places the loaded image 
         displayClearImageText();      // user prompt as "clear" the image
-        displayColorPalette(colors);  // shows teh generated color scheme/palettes at the bottom
+        displayColorPalette(colors);  // shows the generated color scheme/palettes at the bottom
     } else {
         displayImgLoadPrompt();       // shows prompt for user to "drop a file"
+    }
+
+    // image loading method for Pasted URL
+    if (loadImgFromUrl && clipboardText != null && clipboardText.length() > 0) {
+        loadImgFromUrl = false;
+        // 1. download the image in Data folder with a specific name
+        m = null;       // set the img object to null
+        FilePath = "";  // reste FilePath
+        getImgData = false;
+        m = loadImage(clipboardText, "png"); // then load the img (blocking)
+        m.save("data/webImg.png");
+        // 2. Load the image now
+        m = loadImage("webImg.png");
+        // 3. assign it to the global var "FilePath" for the palette generator
+        FilePath = sketchPath() + "/data/webImg.png";
+        // 4. Tell the sketch to rpoceed to resizing, etc. now
+        getImgData = true;
     }
 
     // Visual divider for Lower "control area" (footer section) of the applet
     strokeWeight(0.5);
     stroke(255);
     line(0, adjustedAppletHeight, width, adjustedAppletHeight);
+
+    // keyboard shortcut info on screen
+    textAlign(CENTER);
+    textSize(12);
+    fill(255);
+    text("L: Load Img,  P: Create Palette,   C: Clear Img,   D: Toggle Debug View,  0: Clear Console", width/2, height-8);
 }
 
 
-void keyPressed() {
-  if (key == 'l' || key == 'L') {
-    selectInput("Select an image", "fileSelected");
-  }
-
-  if (key == 'c' || key == 'C') {
-    resetParameters();
-  }
-
-  if (key == 'p' || key == 'P') {
-    generatePalette(FilePath);
-  }
-
-  // for console
-  if(key == 'd' || key == 'D'){
-    debugView = !debugView;
-    if(debugView){
-        myConsole.show();
-    }else{
-        myConsole.hide();
+void keyPressed(KeyEvent event) {
+    if (key == 'l' || key == 'L') {
+        selectInput("Select an image", "fileSelected");
     }
-  }
-  if(key == '0'){
-    console.clear();
-  }
+
+    if (key == 'c' || key == 'C') {
+        resetParameters();
+    }
+
+    if (key == 'p' || key == 'P') {
+        generatePalette(FilePath);
+    }
+
+    // for console
+    if (key == 'd' || key == 'D') {
+        debugView = !debugView;
+        if (debugView) {
+            myConsole.show();
+        } else {
+            myConsole.hide();
+        }
+    }
+    if (key == '0') {
+        console.clear();
+    }
+
+    // Check if Ctrl+V or Cmd+V is pressed
+    if ((key == 'v' || key == 'V') && (event.isControlDown() || event.isMetaDown())) {
+        // Access the system clipboard
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        Transferable contents = clipboard.getContents(null);
+
+        // Check if clipboard contains text
+        if (contents != null && contents.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+            try {
+                // Get the text from the clipboard
+                clipboardText = (String)contents.getTransferData(DataFlavor.stringFlavor);
+                print("Pasted String: ");
+                println(clipboardText);
+                print("Is Img URL: ");
+                println(isImageUrl(clipboardText));
+
+                if (isImageUrl(clipboardText)) {
+                    loadImgFromUrl = true;
+                } else {
+                    loadImgFromUrl = false;
+                }
+            } 
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
 
 
@@ -237,7 +316,7 @@ void displayImgLoadPrompt() {
     line(width/2-browserStrWidth/2, browserStrY+2, width/2+browserStrWidth/2, browserStrY+2);
 
     fill(255);
-    text("or Press \"L\"", width/2, height/2 - footerHeight/2+(textSizePxL*3));
+    text(pastePromptTxt, width/2, height/2 - footerHeight/2+(textSizePxL*3));
 
     noFill();
 }
@@ -271,11 +350,18 @@ public void dropEvent(DropEvent theDropEvent) {
         FilePath = theDropEvent.file().getAbsolutePath();
         // println(FilePath);
         getImgData = true;   // this var is used to ensure that image has been loaded now grab info to do resizing if needed
+        
+        imgIsFile = true;
+        imgIsURL = false;
+
         println("\nLoading image ...");
     } else {
         // show user that it wasn't an image
         promptText = "\nNot image! Try again!";
         println(promptText);
+
+        imgIsFile = false;
+        imgIsURL = false;
     }
 }
 
@@ -290,14 +376,24 @@ public void fileSelected(File selection) {
             // assign it to the global var "FilePath" for the palette generator
             FilePath = selection.getAbsolutePath();
             getImgData = true;   // this var is used to ensure that image has been loaded now grab info to do resizing if needed
+            
+            imgIsFile = true;
+            imgIsURL = false;
+            
             println("\nLoading image ...");
         } else {
             // show user that it wasn't an image
             promptText = "\nNot image! Try again!";
             println(promptText);
+
+            imgIsFile = false;
+            imgIsURL = false;
         }
     } else {
         println("Image selection was cancelled! Try again?");
+
+        imgIsFile = false;
+        imgIsURL = false;
     }
 }
 
@@ -351,8 +447,6 @@ public void resizeAndDisplayImg(PImage img) {
 }
 
 
-
-
 void generatePalette(String filePath) {
     // check if the file exists
     File f = new File(filePath);
@@ -367,6 +461,49 @@ void generatePalette(String filePath) {
             colors = cs.toArray();
             println("Color palette (and scheme) prepared!");
             println("\nYou can now cycle through schemes");
+
+            // Create a JSONArray to store color objects
+            palette = new JSONArray();
+
+            // Print RGB values for each color
+            for (int i = 0; i < colors.length; i++) {
+                color c = colors[i];
+                String ch = hex(c);
+                int r = int(red(c));
+                int g = int(green(c));
+                int b = int(blue(c));
+
+                println(String.valueOf(r) + ", " + String.valueOf(g) + ", " + String.valueOf(b) + ", " + ch);
+
+                // Create a JSONObject for each color
+                JSONObject colorObj = new JSONObject();
+                colorObj.setInt("r", r);
+                colorObj.setInt("g", g);
+                colorObj.setInt("b", b);
+                colorObj.setString("hex", ch);
+
+                // Add the color object to the palette array
+                palette.setJSONObject(i, colorObj);
+            }
+
+            // Print the JSON object
+            // println(palette); // prints the JSON object
+            // Check if the palette array is not empty
+            println("");
+            if (palette.size() > 0) {
+                // Convert the JSON array to a string
+                String jsonString = palette.toString();
+                try {
+                    // Save the JSON string to the sketch's data folder
+                    saveStrings("data/curr_palette.json", new String[]{jsonString});
+                    println("Palette JSON object saved successfully.");
+                }
+                catch(Exception e) {
+                    println("Palette JSON object could not be writtent o a file");
+                }
+            } else {
+                println("Palette JSON object is empty. Not saved.");
+            }
         } 
         catch (OutOfMemoryError e) {
             // Handle the OutOfMemoryError
@@ -407,7 +544,82 @@ void displayColorPalette(color[] colors) {
             strokeWeight(0.5);
             stroke(highlightColor);
             fill(colors[i]);
-            rect(x, adjustedAppletHeight, x + widthOfCell, 64);
+            rect(x, adjustedAppletHeight, x + widthOfCell, heightOfPaletteCell);
+
+            if (debugView) {
+                // Show the RGB on top of the color plettes
+                color c = colors[i];
+                String ch = hex(c);
+                String r = String.valueOf(int(red(c)));
+                String g = String.valueOf(int(green(c)));
+                String b = String.valueOf(int(blue(c)));
+                String dvColorStr = r + "," + g + "," + b;
+                textSize(9);
+                textAlign(CENTER);
+                fill(255); // ** Adjust later based on rect color [TBD]
+                text(dvColorStr, x+widthOfCell/2, adjustedAppletHeight+heightOfPaletteCell/2);
+                text(ch, x+widthOfCell/2, (adjustedAppletHeight+heightOfPaletteCell/2)+10);
+            }
         }
+    }
+}
+
+
+boolean isImageUrl(String urlString) {
+    try {
+        URL url = new URL(urlString);
+        String file = url.getFile();
+
+        // Define regular expression pattern to match common image file extensions
+        Pattern pattern = Pattern.compile("\\.(jpg|jpeg|png|gif|bmp)$", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(file);
+
+        // Check if URL ends with a known image file extension
+        if (matcher.find()) {
+            return true;
+        }
+
+        // Check if URL contains image-related query parameters
+        String query = url.getQuery();
+        if (query != null && (query.contains("format=image") || query.contains("auto=format"))) {
+            return true;
+        }
+
+        // Check if URL contains a known image path
+        if (file.endsWith("/photo") || file.contains("/photos/") || file.contains("/images/")) {
+            return true;
+        }
+
+        // download the image
+        // TBD []
+
+        imgIsFile = false;
+        imgIsURL = true;
+
+        return false;
+    } 
+    catch (MalformedURLException e) {
+        imgIsFile = false;
+        imgIsURL = false;
+        
+        // URL is not valid
+        return false;
+    }
+}
+
+
+void detectOs() {
+    if (platform == PConstants.WINDOWS) {
+        isMac = false;
+        isWin = true;
+        isNix = false;
+    } else if (platform == PConstants.MACOSX) {
+        isMac = true;
+        isWin = false;
+        isNix = false;
+    } else if (platform == PConstants.LINUX) {
+        isMac = false;
+        isWin = false;
+        isNix = true;
     }
 }
