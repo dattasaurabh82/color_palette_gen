@@ -169,6 +169,7 @@ void draw () {
 }
 
 
+
 void keyPressed(KeyEvent event) {
     if (key == 'l' || key == 'L') {
         selectInput("Select an image", "fileSelected");
@@ -252,40 +253,6 @@ void resetParameters() {
     colArrIsNonZero = false;  //
 }
 
-void checkOverText() {
-    // line(width/2-browserStrWidth/2, browserStrY+2, width/2+browserStrWidth/2, browserStrY+2);
-    if (mouseX >= width/2-browserStrWidth/2 && mouseX <= width/2+browserStrWidth/2 && mouseY >= browserStrY-10 && mouseY <= browserStrY+2) {
-        overBrowseLink = true;
-    } else {
-        overBrowseLink = false;
-    }
-
-    if (m != null) {
-        //  text(clrString, width-(clrStringWidth+10), adjustedAppletHeight-5);
-        if (mouseX >= clrStrX && mouseX <= clrStrX+clrStrWidth && mouseY >= clrStrY-20 && mouseY <= clrStrY) {
-            overClearText = true;
-        } else {
-            overClearText = false;
-        }
-    } else {
-        overClearText = false;
-    }
-}
-
-
-PImage clearImg(PImage img) {
-    if (img == null) {
-        println("There was no image to be cleared ...");
-        return null;
-    } else {
-        img = null;
-        System.gc(); // garbage collection
-        println("Image cleared up!");
-        return img;
-    }
-}
-
-
 
 // Display Prompt for user to drop image
 void displayImgLoadPrompt() {
@@ -320,24 +287,6 @@ void displayImgLoadPrompt() {
 
     noFill();
 }
-
-
-// Display Prompt for user to clear the image
-void displayClearImageText() {
-    if (overClearText) {
-        fill(highlightColor);
-    } else {
-        fill(150);
-    }
-    textAlign(LEFT);
-    textSize(14);
-
-    clrStrWidth = textWidth(clrStr);
-    clrStrX = width-(clrStrWidth+12);
-    clrStrY = adjustedAppletHeight-5;
-    text(clrStr, clrStrX, clrStrY);
-}
-
 
 
 // Callback for detecting drop event of image file
@@ -410,40 +359,6 @@ public boolean selectionIsImage(File file) {
         }
     }
     return false;
-}
-
-
-
-// Display function of image and upon when the image has been dropped
-public void resizeAndDisplayImg(PImage img) {
-    if (getImgData) {
-        // ** We are using a counter, to pass few cycles, as the image doesn't get loaded immediately
-        loadingCounter++;
-        if (loadingCounter == 20) {
-            println("orig img w:", img.width, " orig img h:", img.height);
-            // Business logic for resizing image
-            if (img.width > adjustedAppletWidth || img.height > adjustedAppletHeight) {
-                // Check if the image is larger than the adjusted dimensions
-                float aspectRatio = float(img.width) / img.height;  // Calculate aspect ratio of the image
-
-                if (aspectRatio > 1) {
-                    // Image is wider than tall
-                    img.resize(adjustedAppletWidth, 0);  // Resize width to fit adjusted width, height will be auto-calculated
-                } else {
-                    // Image is taller than wide or square
-                    img.resize(0, adjustedAppletHeight);  // Resize height to fit adjusted height, width will be auto-calculated
-                }
-                println("resized img w:", img.width, " resized img h:", img.height);
-            } else {
-                println("No resizing needed ...");
-            }
-            loadingCounter = 0;
-            getImgData = false;
-        }
-    }
-    // Draw the image
-    imageMode(CORNER);
-    image(img, (width - m.width) / 2, adjustedAppletHeight/2-img.height/2);
 }
 
 
@@ -523,104 +438,3 @@ void generatePalette(String filePath) {
     }
 }
 
-
-
-void displayColorPalette(color[] colors) {
-    // check if the color is not black
-    for (color c : colors) {
-        if (c != color(0, 0, 0)) { 
-            colArrIsNonZero = true;
-            break;
-        }
-    }
-
-    // if color scheme object is not null and if all the col elements in the the color array are non-zeros  
-    if (cs != null && colArrIsNonZero) {
-        for (int i = 0; i < colors.length; i++) {
-            // println(hex(colors[i]));
-            rectMode(CORNER);
-            int widthOfCell = width/colors.length;
-            int x = i*widthOfCell;
-
-            strokeWeight(0.5);
-            stroke(highlightColor);
-            fill(colors[i]);
-            rect(x, adjustedAppletHeight, x + widthOfCell, heightOfPaletteCell);
-
-            if (debugView) {
-                // Show the RGB on top of the color palettes
-                color c = colors[i];
-                String ch = hex(c);
-                String r = String.valueOf(int(red(c)));
-                String g = String.valueOf(int(green(c)));
-                String b = String.valueOf(int(blue(c)));
-                String dvColorStr = r + "," + g + "," + b;
-                textSize(9);
-                textAlign(CENTER);
-                fill(255); // ** Adjust later based on rect color [TBD]
-                text(dvColorStr, x+widthOfCell/2, adjustedAppletHeight+heightOfPaletteCell/2);
-                text(ch, x+widthOfCell/2, (adjustedAppletHeight+heightOfPaletteCell/2)+10);
-            }
-        }
-    }
-}
-
-
-boolean isImageUrl(String urlString) {
-    try {
-        URL url = new URL(urlString);
-        String file = url.getFile();
-
-        // Define regular expression pattern to match common image file extensions
-        Pattern pattern = Pattern.compile("\\.(jpg|jpeg|png|gif|bmp)$", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(file);
-
-        // Check if URL ends with a known image file extension
-        if (matcher.find()) {
-            return true;
-        }
-
-        // Check if URL contains image-related query parameters
-        String query = url.getQuery();
-        if (query != null && (query.contains("format=image") || query.contains("auto=format"))) {
-            return true;
-        }
-
-        // Check if URL contains a known image path
-        if (file.endsWith("/photo") || file.contains("/photos/") || file.contains("/images/")) {
-            return true;
-        }
-
-        // download the image
-        // TBD []
-
-        imgIsFile = false;
-        imgIsURL = true;
-
-        return false;
-    } 
-    catch (MalformedURLException e) {
-        imgIsFile = false;
-        imgIsURL = false;
-        
-        // URL is not valid
-        return false;
-    }
-}
-
-
-void detectOs() {
-    if (platform == PConstants.WINDOWS) {
-        isMac = false;
-        isWin = true;
-        isNix = false;
-    } else if (platform == PConstants.MACOSX) {
-        isMac = true;
-        isWin = false;
-        isNix = false;
-    } else if (platform == PConstants.LINUX) {
-        isMac = false;
-        isWin = false;
-        isNix = true;
-    }
-}
