@@ -1,5 +1,5 @@
 /*
-    @Context    An appplet to generate color palettes based on an image
+    @Context    An appplet (main entry point) to generate color palettes based on an image and send the palettes to th DMX/Art-Net
     @Location   Berlin, Germany
     @author     Saurabh Datta (Prophet GMBH)
     @Date       April 2024
@@ -254,41 +254,6 @@ void resetParameters() {
 }
 
 
-// Display Prompt for user to drop image
-void displayImgLoadPrompt() {
-    noStroke();
-    fill(30);
-    rectMode(CENTER);
-    rect(width/2, height/2 - footerHeight/2-10, width/2+50, width/2);
-    imageMode(CENTER);
-    image(loadImageIcon, width/2, height/2-125);
-    fill(255);
-    textSize(textSizePxL);
-    textAlign(CENTER);
-    text(promptText, width/2, height/2 - footerHeight/2-textSizePxL/2);
-    textSize(textSizePxM);
-    text("or", width/2, height/2 - footerHeight/2+textSizePxL/2);
-    if (overBrowseLink) {
-        fill(highlightColor);
-        stroke(highlightColor);
-    } else {
-        fill(255);
-        stroke(255);
-    }
-    browserStrWidth = textWidth(browseStr);
-    browserStrX = width/2;
-    browserStrY = height/2 - footerHeight/2+(textSizePxL/2*3);
-    text(browseStr, browserStrX, browserStrY);
-    strokeWeight(1);
-    line(width/2-browserStrWidth/2, browserStrY+2, width/2+browserStrWidth/2, browserStrY+2);
-
-    fill(255);
-    text(pastePromptTxt, width/2, height/2 - footerHeight/2+(textSizePxL*3));
-
-    noFill();
-}
-
-
 // Callback for detecting drop event of image file
 public void dropEvent(DropEvent theDropEvent) {
     // Check if the dropped object is an image and if so, load it
@@ -343,98 +308,6 @@ public void fileSelected(File selection) {
 
         imgIsFile = false;
         imgIsURL = false;
-    }
-}
-
-
-
-// Custom function to check file type 
-public boolean selectionIsImage(File file) {
-    String[] imgExtensions = {"jpg", "jpeg", "png", "gif", "bmp"};
-    String fileName = file.getName();
-    String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
-    for (String ext : imgExtensions) {
-        if (extension.equals(ext)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-
-void generatePalette(String filePath) {
-    // check if the file exists
-    File f = new File(filePath);
-    if (f.exists()) {
-        println("The file exists.");
-        println(filePath);
-        println("Preparing color palette ...");
-        try {
-            // create our color scheme object
-            cs = new ColorScheme(filePath, this);
-            // get the list of colors from the color scheme
-            colors = cs.toArray();
-            println("Color palette (and scheme) prepared!");
-            println("\nYou can now cycle through schemes");
-
-            // Create a JSONArray to store color objects
-            palette = new JSONArray();
-
-            // Print RGB values for each color
-            for (int i = 0; i < colors.length; i++) {
-                color c = colors[i];
-                String ch = hex(c);
-                int r = int(red(c));
-                int g = int(green(c));
-                int b = int(blue(c));
-
-                println(String.valueOf(r) + ", " + String.valueOf(g) + ", " + String.valueOf(b) + ", " + ch);
-
-                // Create a JSONObject for each color
-                JSONObject colorObj = new JSONObject();
-                colorObj.setInt("r", r);
-                colorObj.setInt("g", g);
-                colorObj.setInt("b", b);
-                colorObj.setString("hex", ch);
-
-                // Add the color object to the palette array
-                palette.setJSONObject(i, colorObj);
-            }
-
-            // Print the JSON object
-            // println(palette);
-            
-            // Check if the palette array is not empty
-            println("");
-            if (palette.size() > 0) {
-                // Convert the JSON array to a string
-                String jsonString = palette.toString();
-                try {
-                    // Save the JSON string to the sketch's data folder
-                    saveStrings("data/curr_palette.json", new String[]{jsonString});
-                    println("Palette JSON object saved successfully.");
-                }
-                catch(Exception e) {
-                    println("Palette JSON object could not be writtent o a file");
-                }
-            } else {
-                println("Palette JSON object is empty. Not saved.");
-            }
-        } 
-        catch (OutOfMemoryError e) {
-            // Handle the OutOfMemoryError
-            println("Ran out of memory!\nImage too big and the respectivce color array is LAAARRGEEE ...");
-            resetParameters();
-            // You can add more error handling code here
-        } 
-        catch (Exception e) {
-            // Handle other exceptions
-            e.printStackTrace();
-            resetParameters();
-        }
-    } else {
-        println("The image file does not exist.");
-        println("Can't proceed for palette Generation ...");
     }
 }
 

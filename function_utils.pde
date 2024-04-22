@@ -1,4 +1,9 @@
-
+/*
+    @Context    Supporting Utils to hold mechanical functions for the color palette gen project
+    @Location   Berlin, Germany
+    @author     Saurabh Datta (Prophet GMBH)
+    @Date       April 2024
+ */
 
 boolean isImageUrl(String urlString) {
     try {
@@ -78,4 +83,18 @@ void checkOverText() {
     } else {
         overClearText = false;
     }
+}
+
+
+// Custom function to check file type 
+public boolean selectionIsImage(File file) {
+    String[] imgExtensions = {"jpg", "jpeg", "png", "gif", "bmp"};
+    String fileName = file.getName();
+    String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+    for (String ext : imgExtensions) {
+        if (extension.equals(ext)) {
+            return true;
+        }
+    }
+    return false;
 }
