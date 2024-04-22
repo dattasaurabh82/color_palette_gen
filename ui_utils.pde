@@ -1,8 +1,8 @@
 /*
     @Context    Supporting Utils to hold direct UI related functions for the color palette gen project
-    @Location   Berlin, Germany
-    @author     Saurabh Datta (Prophet GMBH)
-    @Date       April 2024
+ @Location   Berlin, Germany
+ @author     Saurabh Datta (Prophet GMBH)
+ @Date       April 2024
  */
 
 // Display Prompt for user to drop image
@@ -149,7 +149,7 @@ void generatePalette(String filePath) {
 
             // Print the JSON object
             // println(palette);
-            
+
             // Check if the palette array is not empty
             println("");
             if (palette.size() > 0) {

@@ -1,8 +1,8 @@
 /*
     @Context    An appplet (main entry point) to generate color palettes based on an image and send the palettes to th DMX/Art-Net
-    @Location   Berlin, Germany
-    @author     Saurabh Datta (Prophet GMBH)
-    @Date       April 2024
+ @Location   Berlin, Germany
+ @author     Saurabh Datta (Prophet GMBH)
+ @Date       April 2024
  */
 
 
@@ -264,7 +264,7 @@ public void dropEvent(DropEvent theDropEvent) {
         FilePath = theDropEvent.file().getAbsolutePath();
         // println(FilePath);
         getImgData = true;   // this var is used to ensure that image has been loaded now grab info to do resizing if needed
-        
+
         imgIsFile = true;
         imgIsURL = false;
 
@@ -290,10 +290,10 @@ public void fileSelected(File selection) {
             // assign it to the global var "FilePath" for the palette generator
             FilePath = selection.getAbsolutePath();
             getImgData = true;   // this var is used to ensure that image has been loaded now grab info to do resizing if needed
-            
+
             imgIsFile = true;
             imgIsURL = false;
-            
+
             println("\nLoading image ...");
         } else {
             // show user that it wasn't an image
@@ -310,4 +310,3 @@ public void fileSelected(File selection) {
         imgIsURL = false;
     }
 }
-

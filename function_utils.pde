@@ -1,8 +1,8 @@
 /*
     @Context    Supporting Utils to hold mechanical functions for the color palette gen project
-    @Location   Berlin, Germany
-    @author     Saurabh Datta (Prophet GMBH)
-    @Date       April 2024
+ @Location   Berlin, Germany
+ @author     Saurabh Datta (Prophet GMBH)
+ @Date       April 2024
  */
 
 boolean isImageUrl(String urlString) {
@@ -41,7 +41,7 @@ boolean isImageUrl(String urlString) {
     catch (MalformedURLException e) {
         imgIsFile = false;
         imgIsURL = false;
-        
+
         // URL is not valid
         return false;
     }
