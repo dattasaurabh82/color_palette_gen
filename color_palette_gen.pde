@@ -124,6 +124,9 @@ void setup() {
     drop = new SDrop(this);
 
     smooth();
+
+    setupSocksClient("127.0.0.1", 8765, "test");
+    // setupSecureSocksClient("127.0.0.1", 8766, "secure_test"); // TBD
 }
 
 
@@ -222,6 +225,11 @@ void keyPressed(KeyEvent event) {
                 e.printStackTrace();
             }
         }
+    }
+
+    // TEST
+    if (key == 's' || key == 'S') {
+        socketSendMessage("Ola World"); //
     }
 }
 

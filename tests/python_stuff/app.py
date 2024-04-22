@@ -25,6 +25,7 @@ def main():
     start_server_ws = websockets.serve(echo, "localhost", 8765)
     loop.run_until_complete(start_server_ws)
     logging.info("WebSocket server started on ws://localhost:8765")
+    
     # Define the Secure WebSocket server (wss://)
     start_server_wss = websockets.serve(echo,
                                         "localhost", 8766, ssl=ssl_context)

@@ -1,0 +1,77 @@
+/*
+    @Context    Supporting Utils to hold Network and comms related functions for the color palette gen project
+ @Location   Berlin, Germany
+ @author     Saurabh Datta (Prophet GMBH)
+ @Date       April 2024
+ */
+
+
+// ----------- WEBSOCKETS -------------- //
+import websockets.*;
+
+WebsocketClient wsc;
+WebsocketClient wssc;
+
+void setupSocksClient(String URL, int PORT, String HEADER) {
+    String subs_url = "ws://" + URL + ":" + str(PORT) + "/" + HEADER;
+    wsc = new WebsocketClient(this, subs_url);
+    wsc.
+}
+
+//
+// void setupSecureSocksClient(String URL, int PORT, String HEADER) {
+//     String subs_url = "wss://" + URL + ":" + str(PORT) + "/" + HEADER;
+//     wssc = new WebsocketClient(this, subs_url);
+// }
+
+// // This method is called when the connection is opened
+// public void webSocketConnectEvent(String sessionId, String sessionIp) {
+//     println("Connected: Session ID - " + sessionId + ", IP - " + sessionIp);
+// }
+
+// // This method is called when the connection is closed
+// public void webSocketDisconnectEvent(String sessionId, String sessionIp) {
+//     println("Disconnected: Session ID - " + sessionId + ", IP - " + sessionIp);
+// }
+
+// @OnWebSocketConnect
+// public void onConnect() {
+//     println("Connected to server.");
+// }
+
+// @OnWebSocketClose
+// public void onClose(int statusCode, String reason) {
+//     println("Disconnected from server. Code: " + statusCode + ", Reason: " + reason);
+// }
+
+
+// Callback for when the connection is opened
+void onOpen() {
+  println("Connected to the server.");
+}
+
+// Callback for when the connection is closed
+void onClose(int code, String reason, boolean remote) {
+  println("Disconnected from the server. Code: " + code + ", Reason: " + reason);
+}
+
+// Method to read a message to the server
+void webSocketEvent(String msg) {
+    println("[Web Sockets]  Received msg from WS server:", msg);
+}
+
+// Method to send a message to the server
+// void socketSendMessage(String message) {
+//     wsc.sendMessage(message);
+//     // wsc.sendMessageTo("message", "userID");
+//     // wsc.sendMessageTo(byteArray, "userID");
+// }
+
+
+
+// ---------------- MQTT --------------- // 
+import mqtt.*;
+MQTTClient mqttc;
+
+void setupMQTTClient() {
+}
