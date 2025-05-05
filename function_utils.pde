@@ -1,7 +1,7 @@
 /*
-    @Context    Supporting Utils to hold mechanical functions for the color palette gen project
+ @Context    Supporting Utils to hold mechanical functions for the color palette gen project
  @Location   Berlin, Germany
- @author     Saurabh Datta (Prophet GMBH)
+ @author     Saurabh Datta
  @Date       April 2024
  */
 

@@ -1,7 +1,7 @@
 /*
-    @Context    An appplet (main entry point) to generate color palettes based on an image and send the palettes to th DMX/Art-Net
+ @Context    An appplet (main entry point) to generate color palettes based on an image and send the palettes to th DMX/Art-Net
  @Location   Berlin, Germany
- @author     Saurabh Datta (Prophet GMBH)
+ @author     Saurabh Datta
  @Date       April 2024
  */
 
